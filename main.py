@@ -50,7 +50,7 @@ async def forwarder(request: Request):
             r = await client.post(
                 f"https://{recipient}",
                 headers=request.headers,
-                json=request_bytes.decode("utf-8"),
+                data=request_bytes,
             )
             print(f"{recipient = } responded with {r.status_code = }")
             responses |= {recipient: r.status_code}
