@@ -1,0 +1,17 @@
+{
+    "name": "GitHub Webhook Forwarder",
+    "description": "Forwards GitHub webhooks to dev instances of Pangeo Forge API.",
+    "image": "heroku/python",
+    "repository": "https://github.com/pangeo-forge/github-webhook-forwarder",
+    "keywords": [],
+    "addons": [],
+    "env": {},
+    "environments": {
+      "test": {
+        "scripts": {
+          "test-setup": "python -m pip install -r dev-requirements.txt",
+          "test": "pytest test.py -v"
+        }
+      }
+    }
+  }

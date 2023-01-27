@@ -1,36 +1,34 @@
-from dataclasses import dataclass
+from fastapi import FastAPI, HTTPException, Request, status
+from pydantic import BaseModel
 
-import flask
-import functions_framework
-import requests
+app = FastAPI()
 
 
-@dataclass
-class GitHubLabel:
-    id: int
-    node_id: str
-    url: str
+class GitHubLabel(BaseModel):
     name: str
-    color: str
-    default: bool
-    description: str
 
 
-@functions_framework.http
-def forwarder(request: flask.Request):
+@app.post("/", status_code=status.HTTP_200_OK)
+async def forwarder(request: Request):
     """
     
     """
 
     event = request.headers.get("X-GitHub-Event")
     print(f"{event = }")
+
+    request_json = await request.json()
+
     if event == "pull_request":
         labels = [
             GitHubLabel(**label)
-            for label in request.json["pull_request"]["labels"]
+            for label in request_json["pull_request"]["labels"]
         ]
         if not labels:
-            return "No labels", 400
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="No labels."
+            )
 
         forward_to = [
             l.name.split("fwd:")[-1]
@@ -38,13 +36,20 @@ def forwarder(request: flask.Request):
             if l.name.startswith("fwd:")
         ]
         if not forward_to:
-            return "No labels starting with 'fwd:'", 400
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="No labels starting with 'fwd:'",
+            )
 
     for recipient in forward_to:
         print(f"Forwarding GitHub webhook to {recipient = }")
-        requests.post(
-            f"https://{recipient}",
-            headers=request.headers,
-            json=request.json,
-        )
-    return f"Forwarded to {forward_to}", 200
+        # FIXME: use httpx to make this request (aiohttp doesnt work w python 3.11)
+        # async with aiohttp.ClientSession() as session:
+        #     async with session.post(
+        #            f"https://{recipient}",
+        #            headers=request.headers,
+        #            json=request_json,
+        #        ) as response:
+        #            ...
+
+    return f"Forwarded to {forward_to}"
