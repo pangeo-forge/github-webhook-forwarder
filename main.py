@@ -49,7 +49,7 @@ async def forwarder(request: Request):
         async with httpx.AsyncClient() as client:
             r = await client.post(
                 f"https://{recipient}",
-                headers=request.headers,
+                headers=dict(request.headers),
                 data=request_bytes,
             )
             print(f"{recipient = } responded with {r.status_code = }")
