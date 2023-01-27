@@ -19,6 +19,7 @@ async def forwarder(request: Request):
     print(f"{event = }")
 
     request_json = await request.json()
+    request_bytes = await request.body()
 
     if event == "pull_request":
         labels = [
@@ -49,7 +50,7 @@ async def forwarder(request: Request):
             r = await client.post(
                 f"https://{recipient}",
                 headers=request.headers,
-                json=request_json,
+                json=request_bytes,
             )
             print(f"{recipient = } responded with {r.status_code = }")
             responses |= {recipient: r.status_code}
