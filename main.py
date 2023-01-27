@@ -1,3 +1,4 @@
+import httpx
 from fastapi import FastAPI, HTTPException, Request, status
 from pydantic import BaseModel
 
@@ -41,15 +42,16 @@ async def forwarder(request: Request):
                 detail="No labels starting with 'fwd:'",
             )
 
+    responses = {}
     for recipient in forward_to:
         print(f"Forwarding GitHub webhook to {recipient = }")
-        # FIXME: use httpx to make this request (aiohttp doesnt work w python 3.11)
-        # async with aiohttp.ClientSession() as session:
-        #     async with session.post(
-        #            f"https://{recipient}",
-        #            headers=request.headers,
-        #            json=request_json,
-        #        ) as response:
-        #            ...
+        async with httpx.AsyncClient() as client:
+            r = await client.post(
+                f"https://{recipient}",
+                headers=request.headers,
+                json=request_json,
+            )
+            print(f"{recipient = } responded with {r.status_code = }")
+            responses |= {recipient: r.status_code}
 
-    return f"Forwarded to {forward_to}"
+    return f"Forwarded to {responses}"
