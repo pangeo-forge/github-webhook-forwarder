@@ -22,26 +22,32 @@ async def forwarder(request: Request):
     request_bytes = await request.body()
 
     if event == "pull_request":
-        labels = [
-            GitHubLabel(**label)
-            for label in request_json["pull_request"]["labels"]
-        ]
-        if not labels:
-            raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                detail="No labels."
-            )
+        label_containing_obj = "pull_request"
+    elif event == "issue_comment":
+        label_containing_obj = "issue"
+    else:
+        raise NotImplementedError
 
-        forward_to = [
-            l.name.split("fwd:")[-1]
-            for l in labels
-            if l.name.startswith("fwd:")
-        ]
-        if not forward_to:
-            raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                detail="No labels starting with 'fwd:'",
-            )
+    labels = [
+        GitHubLabel(**label)
+        for label in request_json[label_containing_obj]["labels"]
+    ]
+    if not labels:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="No labels."
+        )
+
+    forward_to = [
+        l.name.split("fwd:")[-1]
+        for l in labels
+        if l.name.startswith("fwd:")
+    ]
+    if not forward_to:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="No labels starting with 'fwd:'",
+        )
 
     responses = {}
     for recipient in forward_to:
