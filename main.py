@@ -49,7 +49,10 @@ async def forwarder(request: Request):
         async with httpx.AsyncClient() as client:
             r = await client.post(
                 f"https://{recipient}",
-                headers=dict(request.headers),
+                headers={
+                    "X-GitHub-Event": request.headers.get("X-GitHub-Event"),
+                    "X-Hub-Signature-256": request.headers.get("X-Hub-Signature-256"),
+                },
                 data=request_bytes,
             )
             print(f"{recipient = } responded with {r.status_code = }")
