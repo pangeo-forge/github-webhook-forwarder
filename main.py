@@ -60,6 +60,7 @@ async def forwarder(request: Request):
                     "X-Hub-Signature-256": request.headers.get("X-Hub-Signature-256"),
                 },
                 data=request_bytes,
+                json=request_json,
             )
             print(f"{recipient = } responded with {r.status_code = }")
             responses |= {recipient: r.status_code}
