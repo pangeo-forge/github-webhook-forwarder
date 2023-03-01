@@ -61,7 +61,6 @@ async def forwarder(request: Request):
                     "content-type": "application/json",
                 },
                 data=request_bytes,
-                json=request_json,
             )
             print(f"{recipient = } responded with {r.status_code = }")
             responses |= {recipient: r.status_code}
