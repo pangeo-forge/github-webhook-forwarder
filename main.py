@@ -58,6 +58,7 @@ async def forwarder(request: Request):
                 headers={
                     "X-GitHub-Event": request.headers.get("X-GitHub-Event"),
                     "X-Hub-Signature-256": request.headers.get("X-Hub-Signature-256"),
+                    "content-type": "application/json",
                 },
                 data=request_bytes,
                 json=request_json,
